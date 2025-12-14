@@ -3,12 +3,15 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 3000;
+
 const multer = require('multer');
 const jwt=require("jsonwebtoken")
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 const usermodel = require('./models/user');
-const postmodel = require('./models/post');
-// Folder to store uploaded images
+const Post = require('./models/post');
+const Product = require('./models/product');
 
 
 const mongoose = require('mongoose');
@@ -41,6 +44,9 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
+app.get('/loginhere',(req,res)=>{//================
+  res.render("form");
+ });
 app.post('/register', async (req, res) => {
   let { email, password, username, name, age } = req.body;
 
@@ -60,11 +66,11 @@ app.post('/register', async (req, res) => {
       let token = jwt.sign(
         { email: email, userid: user._id },
         'shhhh',
-        { expiresIn: '1d' }
+
       );
 
       res.cookie('token', token);
-      res.render('homepage');
+      res.render('profile',{user});
     });
   });
 });
@@ -82,10 +88,10 @@ app.post('/login', async (req, res) => {
             // password matched
             let token = jwt.sign({ email, userid: user._id }, 'shhhh', { expiresIn: '1d' });
             res.cookie('token', token, { httpOnly: true });
-            return res.render('homepage'); // ✅ redirect to a page after login
+            return res.render('profile'); // ✅ redirect to a page after login
         } else {
             // password mismatch
-            return res.redirect('/');
+            return res.redirect('/loginhere');
         }
     });
 });
@@ -111,7 +117,7 @@ app.post('/create-post',isLoggedIn ,upload.single('photo'), async (req, res) => 
 });
 app.get('/logout',(req,res)=>{
   res.cookie('token','')
-  res.redirect("/login")
+  res.redirect("/loginhere")
 })
 // A simple route to render an EJS page
 function isLoggedIn(req, res, next) {
@@ -128,23 +134,35 @@ function isLoggedIn(req, res, next) {
     } catch (err) {
         return res.status(401).send('Invalid or expired token');
     }
-}
-app.get('/aboutus',(req,res)=>{
-    res.render('aboutus')
-})
-app.get('/training',(req,res)=>{
-    res.render('training')
-})
+} 
+// make sure you import your model
 
-app.get('/service',(req,res)=>{
-    res.render('service')
-})
-app.get('/impact',(req,res)=>{
-    res.render('impact')
-})
-app.get('/technology',(req,res)=>{
-    res.render('technology')
-})
+app.post('/create', async (req, res) => {
+  try {
+    const { name, price, description, photo } = req.body;
+
+    // Check if product already exists
+    const existingProduct = await Product.findOne({ name });
+    if (existingProduct) {
+      return res.status(400).send('Product already exists');
+    }
+
+    // Create new product
+    const newProduct = new Product({
+      name,
+      price,
+      shortDescription: description,
+      photo
+    });
+
+    await newProduct.save();
+    res.send('✅ Product created successfully');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

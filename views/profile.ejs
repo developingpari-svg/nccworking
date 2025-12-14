@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Krishi Market</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f9f4;
+      color: #2d3e2d;
+    }
+
+    /* Hero Section */
+    .market-hero {
+      background-color: #1b5e20;
+      color: #fff;
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .market-hero h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    .market-tagline {
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    /* Introduction */
+    .market-intro {
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .market-intro h2 {
+      font-size: 2rem;
+      margin-bottom: 15px;
+      color: #2e7d32;
+    }
+    .market-intro p {
+      font-size: 1rem;
+      max-width: 800px;
+      margin: auto;
+      line-height: 1.6;
+    }
+
+    /* Product Section */
+    .product-section {
+      padding: 40px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    /* Product Create Form */
+    .product-create-container {
+      flex: 1 1 300px;
+      background-color: #e8f5e9;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .product-create-container h3 {
+      color: #2e7d32;
+      margin-bottom: 15px;
+    }
+    .product-create-container form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .product-create-container input[type="text"],
+    .product-create-container input[type="number"],
+    .product-create-container input[type="file"] {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    .product-create-container button {
+      background-color: #2e7d32;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    .product-create-container button:hover {
+      background-color: #1b5e20;
+    }
+
+    /* Product Cards */
+    .product-cards-container {
+      flex: 2 1 600px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+    .product-card img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .product-card h4 {
+      color: #2e7d32;
+      margin-bottom: 5px;
+    }
+    .product-card p {
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+      color: #555;
+    }
+    .product-card .price {
+      font-weight: bold;
+      color: #1b5e20;
+    }
+
+    @media (max-width: 768px) {
+      .product-section {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="market-hero">
+    <div class="market-hero-content">
+      <h1>Digital Krishi Market</h1>
+      <p class="market-tagline">
+        Buy, sell, and showcase agricultural products directly from farmers.
+      </p>
+    </div>
+  </section>
+
+  <section class="market-intro">
+    <div class="market-intro-container">
+      <h2>Farmers' Marketplace</h2>
+      <p>
+        Our platform allows farmers to list products for sale, increasing access to local 
+        and regional buyers. You can easily create new product listings, add images, prices,
+        and descriptions. This helps boost income, connect with buyers, and expand agricultural 
+        opportunities in rural areas.
+      </p>
+    </div>
+  </section>
+
+  <section class="product-section">
+    <div class="product-create-container">
+      <h3>Create a New Product</h3>
+      <form action="/create">
+        <input type="text" name="name" placeholder="Product Name" required>
+        <input type="number" name="price" placeholder="Price (NRs)" required>
+        <input type="text" name="description" placeholder="Short Description" required>
+        <input type="file" name="photo" accept="image/*" required>
+        <a href="/product" type="submit">Add Product</button>
+      </form>
+    </div>
+
+    <div class="product-cards-container">
+      <div class="product-card">
+        <img src="uploads/wheat.jpg" alt="Wheat">
+        <h4>Organic Wheat</h4>
+        <p>High-quality wheat grown with organic fertilizers, ideal for baking and cooking.</p>
+        <span class="price">NRs 150/kg</span> 
+      </div>
+
+      <div class="product-card">
+        <img src="uploads/rice.jpg" alt="Rice">
+        <h4>Premium Rice</h4>
+        <p>Freshly harvested rice from local farms, polished and ready to cook.</p>
+        <span class="price">NRs 120/kg</span>
+      </div>
+
+      <div class="product-card">
+        <img src="uploads/tomato.jpg" alt="Tomato">
+        <h4>Fresh Tomatoes</h4>
+        <p>Juicy and red tomatoes directly from the farm to your table.</p>
+        <span class="price">NRs 60/kg</span>
+      </div>
+
+      <div class="product-card">
+        <img src="uploads/maize.jpg" alt="Maize">
+        <h4>Sweet Corn</h4>
+        <p>Locally grown sweet corn, perfect for snacks, cooking, or roasting.</p>
+        <span class="price">NRs 90/kg</span>
+      </div>
+    </div>
+  </section>
+</body>
+</html>
