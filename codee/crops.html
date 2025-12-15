@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronosAgro - Smart Seasonal Advisor</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            width: 90%;
+            max-width: 450px;
+            background: var(--white);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .hero-header {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+            padding: 40px 20px;
+        }
+
+        .current-date { font-size: 1.1rem; opacity: 0.9; }
+        .current-season { font-size: 2.5rem; font-weight: 800; margin: 10px 0; }
+
+        .info-panel {
+            padding: 20px;
+            background: #e8f5e9;
+            margin: -20px 20px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .crop-grid {
+            padding: 0 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .crop-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            transition: transform 0.2s;
+        }
+
+        .crop-card:hover { transform: scale(1.02); }
+
+        .crop-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .crop-details { text-align: left; flex-grow: 1; }
+        .crop-name { font-weight: bold; font-size: 1.2rem; display: block; }
+        .yield-label { font-size: 0.8rem; color: #666; }
+
+        .yield-meter {
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .yield-fill { height: 100%; background: #4caf50; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="hero-header">
+        <div class="current-date" id="date-display">December 15, 2025</div>
+        <div class="current-season" id="season-display">Detecting...</div>
+        <div id="status-msg">Time-Sync Active</div>
+    </div>
+
+    <div class="info-panel" id="advice-panel">
+        Preparing land for cultivation...
+    </div>
+
+    <div class="crop-grid" id="crop-container">
+        </div>
+</div>
+
+<script>
+    const cropDatabase = {
+        Winter: {
+            label: "Winter (Rabi)",
+            advice: "Ideal for cool-weather crops and moisture conservation.",
+            crops: [
+                { name: "Wheat", icon: "🌾", yield: 95 },
+                { name: "Mustard", icon: "🟡", yield: 88 },
+                { name: "Green Peas", icon: "🫛", yield: 82 },
+                { name: "Potato", icon: "🥔", yield: 90 }
+            ]
+        },
+        Summer: {
+            label: "Summer (Zaid)",
+            advice: "Focus on heat-tolerant crops and frequent irrigation.",
+            crops: [
+                { name: "Watermelon", icon: "🍉", yield: 92 },
+                { name: "Cucumber", icon: "🥒", yield: 85 },
+                { name: "Sunflower", icon: "🌻", yield: 78 }
+            ]
+        },
+        Monsoon: {
+            label: "Monsoon (Kharif)",
+            advice: "Best for water-intensive crops during heavy rains.",
+            crops: [
+                { name: "Rice (Paddy)", icon: "🍚", yield: 98 },
+                { name: "Maize (Corn)", icon: "🌽", yield: 85 },
+                { name: "Cotton", icon: "☁️", yield: 75 }
+            ]
+        }
+    };
+
+    function updateSmartDashboard() {
+        const now = new Date();
+        const month = now.getMonth(); // 0 = Jan, 11 = Dec
+        const options = { month: 'long', day: 'numeric', year: 'numeric' };
+        
+        document.getElementById('date-display').innerText = now.toLocaleDateString(undefined, options);
+
+        let seasonKey = "";
+        // Simple Seasonal Logic (Adjust based on your specific geography)
+        if (month >= 10 || month <= 1) seasonKey = "Winter"; // Nov - Feb
+        else if (month >= 2 && month <= 5) seasonKey = "Summer"; // Mar - June
+        else seasonKey = "Monsoon"; // July - Oct
+
+        const data = cropDatabase[seasonKey];
+        
+        document.getElementById('season-display').innerText = data.label;
+        document.getElementById('advice-panel').innerText = data.advice;
+
+        const container = document.getElementById('crop-container');
+        container.innerHTML = "";
+
+        data.crops.forEach(crop => {
+            container.innerHTML += `
+                <div class="crop-card">
+                    <div class="crop-icon">${crop.icon}</div>
+                    <div class="crop-details">
+                        <span class="crop-name">${crop.name}</span>
+                        <div class="yield-label">Yield Potential: ${crop.yield}%</div>
+                        <div class="yield-meter">
+                            <div class="yield-fill" style="width: ${crop.yield}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Initialize on load
+    window.onload = updateSmartDashboard;
+</script>
+
+</body>
+</html>

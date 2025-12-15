@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Krishi | Chitwan Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Branding Colors */
+            --primary: #4CAF50;       
+            --secondary: #255d26;     
+            --accent: #81c784;        
+            
+            --bg: #f1f8f3;            
+            --sidebar-bg: #ffffff;
+            --text-main: #1b1e1b;
+            --text-muted: #6c757d;
+            
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --hover-shadow: 0 15px 35px rgba(76, 175, 80, 0.2); 
+            --card-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar & New Logo Style --- */
+        aside {
+            width: 260px;
+            background: var(--sidebar-bg);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .dk-logo {
+            width: 45px;
+            height: 45px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .brand-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            letter-spacing: -0.5px;
+        }
+
+        nav ul { list-style: none; }
+        
+        nav li {
+            padding: 14px 20px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        nav li::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; height: 100%; width: 0%;
+            background: rgba(76, 175, 80, 0.1);
+            transition: var(--transition);
+            z-index: -1;
+            border-radius: 12px;
+        }
+
+        nav li:hover::before { width: 100%; }
+        nav li:hover { color: var(--primary); transform: translateX(5px); }
+        
+        nav li.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        /* --- Main Content --- */
+        main { flex: 1; padding: 40px; overflow-y: auto; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .search-container { position: relative; width: 350px; }
+
+        .search-container input {
+            width: 100%;
+            padding: 15px 20px 15px 45px;
+            border-radius: 50px;
+            border: 2px solid transparent;
+            background: white;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .search-container input:focus { border-color: var(--primary); box-shadow: var(--hover-shadow); }
+        .search-container i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        .chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid #eee;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .chip.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+
+        .dashboard-section { display: none; animation: fadeIn 0.4s ease-out; }
+        .dashboard-section.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
+
+        .weather-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .weather-card:hover { transform: translateY(-8px); box-shadow: var(--hover-shadow); }
+        .weather-card .value { font-size: 1.8rem; font-weight: 700; color: var(--text-main); margin: 10px 0; }
+        .weather-card i { font-size: 2rem; margin-bottom: 10px; }
+        
+        .fa-sun { color: #f9a825; }
+        .fa-cloud-rain { color: var(--primary); }
+
+        .detail-highlight {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            grid-column: span 2; 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px;
+        }
+        .detail-highlight .value { color: white; font-size: 2.5rem; }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="logo-container">
+            <div class="dk-logo">DK</div>
+            <div class="brand-name">Digital Krishi</div>
+        </div>
+        <nav>
+            <ul>
+                <li class="active" onclick="setView('forecast', this)"><i class="fas fa-seedling"></i> Forecast</li>
+                <li onclick="setView('pressure', this)"><i class="fas fa-tachometer-alt"></i> Air Pressure</li>
+                <li onclick="setView('humidity', this)"><i class="fas fa-tint"></i> Humidity</li>
+                <li onclick="setView('mapping', this)"><i class="fas fa-seedling"></i><a href="mao.html"> mapping</a></li>
+                <li onclick="setView('crops', this)"><i class="fas fa-seedling"></i><a href="crops.html"> smartcrop analysis</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1 id="city-title">Chitwan, NP</h1>
+                <p style="color: var(--text-muted); margin-top: 5px;">Smart Farming Weather Portal</p>
+            </div>
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="city-search" placeholder="Search another area..." onkeypress="handleSearch(event)">
+            </div>
+        </header>
+
+        <div class="controls" id="forecast-controls">
+            <span class="chip" onclick="updateDuration(3, this)">3 Days</span>
+            <span class="chip active" onclick="updateDuration(7, this)">7 Days</span>
+            <span class="chip" onclick="updateDuration(14, this)">14 Days</span>
+        </div>
+
+        <section id="forecast" class="dashboard-section active">
+            <div class="grid-container" id="forecast-grid"></div>
+        </section>
+
+        <section id="pressure" class="dashboard-section">
+            <div class="grid-container">
+                <div class="weather-card detail-highlight">
+                    <div>
+                        <h4>Surface Pressure</h4>
+                        <div class="value" id="current-pressure">-- hPa</div>
+                    </div>
+                    <i class="fas fa-compress-arrows-alt" style="font-size: 3rem; opacity: 0.8;"></i>
+                </div>
+                <div id="pressure-grid" style="display: contents;"></div>
+            </div>
+        </section>
+
+        <section id="humidity" class="dashboard-section">
+             <div class="grid-container">
+                <div class="weather-card detail-highlight" style="background: linear-gradient(135deg, #2196F3, var(--secondary));">
+                    <div>
+                        <h4>Soil/Air Humidity</h4>
+                        <div class="value" id="current-humidity">-- %</div>
+                    </div>
+                    <i class="fas fa-water" style="font-size: 3rem; opacity: 0.8;"></i>
+                </div>
+                <div id="humidity-grid" style="display: contents;"></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let currentDays = 7;
+        let currentLat = 27.6833; 
+        let currentLon = 84.4333; 
+
+        function setView(viewId, navItem) {
+            document.querySelectorAll('nav li').forEach(li => li.classList.remove('active'));
+            navItem.classList.add('active');
+            document.querySelectorAll('.dashboard-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            document.getElementById('forecast-controls').style.display = (viewId === 'forecast') ? 'flex' : 'none';
+        }
+
+        function updateDuration(days, chip) {
+            currentDays = days;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            fetchWeatherData(currentLat, currentLon);
+        }
+
+        async function handleSearch(e) {
+            if (e.key === 'Enter') {
+                const city = e.target.value;
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+                const geoData = await geoRes.json();
+                if (geoData.results) {
+                    const loc = geoData.results[0];
+                    currentLat = loc.latitude; currentLon = loc.longitude;
+                    document.getElementById('city-title').innerText = `${loc.name}, ${loc.country_code.toUpperCase()}`;
+                    fetchWeatherData(currentLat, currentLon);
+                }
+            }
+        }
+
+        async function fetchWeatherData(lat, lon) {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,weathercode&hourly=surface_pressure,relativehumidity_2m,dewpoint_2m&current_weather=true&timezone=auto&forecast_days=14`;
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            // Render Forecast
+            const fGrid = document.getElementById('forecast-grid');
+            fGrid.innerHTML = '';
+            for(let i=0; i<currentDays; i++) {
+                const date = new Date(data.daily.time[i]).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+                fGrid.innerHTML += `<div class="weather-card"><h4>${date}</h4><i class="${getIcon(data.daily.weathercode[i])}"></i><div class="value">${Math.round(data.daily.temperature_2m_max[i])}°C</div></div>`;
+            }
+
+            // Render Pressure & Humidity
+            document.getElementById('current-pressure').innerText = `${Math.round(data.hourly.surface_pressure[0])} hPa`;
+            document.getElementById('current-humidity').innerText = `${data.hourly.relativehumidity_2m[0]}%`;
+        }
+
+        function getIcon(code) {
+            if (code === 0) return 'fas fa-sun';
+            if (code <= 3) return 'fas fa-cloud-sun';
+            if (code >= 51) return 'fas fa-cloud-rain';
+            return 'fas fa-cloud';
+        }
+
+        fetchWeatherData(currentLat, currentLon);
+    </script>
+</body>
+</html>

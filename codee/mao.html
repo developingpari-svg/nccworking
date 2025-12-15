@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AgriSmart - Dynamic SOS Hub</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --emergency-red: #ff4d4d;
+            --warning-orange: #ffa500;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --panel-bg: #ffffff;
+            --border-color: #ddd;
+        }
+
+        /* Dark Mode Class (Triggered by SOS) */
+        body.emergency-active {
+            --bg-color: #0d0d0d;
+            --text-color: #eee;
+            --panel-bg: #1a1a1a;
+            --border-color: #333;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.5s, color 0.5s; }
+        
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-color);
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background: var(--panel-bg);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .emergency-active header { border-bottom: 2px solid var(--emergency-red); }
+
+        .live-status { font-weight: bold; letter-spacing: 1px; visibility: hidden; }
+        .emergency-active .live-status { visibility: visible; color: var(--emergency-red); }
+
+        .blink { animation: blinker 1.2s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .container { display: flex; flex: 1; padding: 20px; gap: 20px; }
+
+        .control-panel {
+            width: 400px;
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .sos-trigger-btn {
+            background: var(--emergency-red);
+            color: white;
+            border: none;
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 2.2rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3);
+        }
+
+        .disaster-feed {
+            flex: 1;
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .feed-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .feed-item span { color: var(--emergency-red); font-weight: bold; }
+
+        #map-zone { flex: 1; border-radius: 20px; overflow: hidden; border: 1px solid var(--border-color); position: relative; }
+        #map { height: 100%; width: 100%; }
+
+        /* Tethering & Graphics */
+        .tower-label { background: #000; color: #00ff00; padding: 2px 5px; border: 1px solid #00ff00; font-size: 0.7rem; border-radius: 4px; }
+        .tether-signal { stroke: var(--emergency-red); stroke-width: 3; stroke-dasharray: 10; animation: flow 1.5s linear infinite; }
+        @keyframes flow { to { stroke-dashoffset: -100; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="font-size: 1.2rem; font-weight: bold;">AGRI-SECURE CONTROL</div>
+        <div class="live-status"><span class="blink">●</span> EMERGENCY NETWORK ACTIVE</div>
+    </header>
+
+    <div class="container">
+        <aside class="control-panel">
+            <button class="sos-trigger-btn" onclick="initiateSOS()">SOS</button>
+            
+            <div id="status-text" style="text-align:center; color:#888; font-family: monospace; font-size: 0.8rem;">SYSTEM STANDBY</div>
+
+            <div class="disaster-feed">
+                <h3 style="margin-bottom:10px; color:var(--warning-orange);">⚠️ DISASTER TRACKER</h3>
+                <div class="feed-item" onclick="zoomToDisaster([27.75, 85.35])"><span>[FLOOD]</span> Sector 4 Water Level Rising</div>
+                <div class="feed-item" onclick="zoomToDisaster([27.78, 85.30])"><span>[STORM]</span> High Winds Detected (NE Area)</div>
+                <div class="feed-item" onclick="zoomToDisaster([27.68, 85.32])"><span>[FIRE]</span> Heat Anomaly detected in forest</div>
+                <div id="user-reports"></div>
+            </div>
+
+            <button onclick="recenterMap()" style="background:var(--panel-bg); color:var(--text-color); border:1px solid var(--border-color); padding:10px; border-radius:10px; cursor:pointer;">RE-SYNC GPS</button>
+        </aside>
+
+        <main id="map-zone">
+            <div id="map"></div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map, userMarker, signalTethers = [];
+        const towerNodes = [[27.725, 85.335], [27.705, 85.312], [27.730, 85.295]];
+
+        function initMap() {
+            map = L.map('map').setView([27.7172, 85.3240], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+            towerNodes.forEach((pos, i) => {
+                L.marker(pos, {icon: L.divIcon({className: 'tower-label', html: `📡 NODE-${i+1}`})}).addTo(map);
+            });
+
+            // Initial Disaster Markers
+            L.marker([27.75, 85.35]).addTo(map).bindPopup("<b style='color:red'>[FLOOD]</b> Sector 4");
+            L.marker([27.78, 85.30]).addTo(map).bindPopup("<b style='color:orange'>[STORM]</b> NE Area");
+            L.marker([27.68, 85.32]).addTo(map).bindPopup("<b style='color:red'>[FIRE]</b> Forest Anomaly");
+
+            map.on('click', function(e) {
+                const desc = prompt("Describe danger at this location:");
+                if (desc) {
+                    L.marker([e.latlng.lat, e.latlng.lng], {
+                        icon: L.divIcon({html: '⚠️', className: 'blink', iconSize: [25, 25]})
+                    }).addTo(map).bindPopup(`<b>USER REPORT:</b> ${desc}`).openPopup();
+                }
+            });
+        }
+
+        function initiateSOS() {
+            // Activate Theme Change
+            document.body.classList.add('emergency-active');
+            
+            const status = document.getElementById('status-text');
+            status.innerHTML = `<span style="color:var(--emergency-red)" class="blink">TETHERING...</span>`;
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const userPos = [pos.coords.latitude, pos.coords.longitude];
+                    if (userMarker) map.removeLayer(userMarker);
+                    signalTethers.forEach(t => map.removeLayer(t));
+                    
+                    userMarker = L.circleMarker(userPos, {color: 'red', radius: 15, fillOpacity: 1, className: 'blink'}).addTo(map).bindPopup("<b>SOS ACTIVE</b>").openPopup();
+                    map.setView(userPos, 14);
+
+                    towerNodes.forEach(tNode => {
+                        let tether = L.polyline([userPos, tNode], {color: 'red', weight: 3, className: 'tether-signal'}).addTo(map);
+                        signalTethers.push(tether);
+                    });
+                    status.innerHTML = `<span style="color:#00ff00">SIGNAL TETHERED</span>`;
+                });
+            }
+        }
+
+        function zoomToDisaster(coords) { map.setView(coords, 14); }
+        function recenterMap() { navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 14)); }
+
+        window.onload = initMap;
+    </script>
+</body>
+</html>
